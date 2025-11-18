@@ -1,0 +1,1271 @@
+{
+  "info": {
+    "_postman_id": "8f8ced73-abd3-42fa-890f-e7823168f1f0",
+    "name": "Logistics API - CRUD (strict tests)",
+    "description": "End-to-end CRUD with strict success + negative tests. Run Auth in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (201) admin",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if(!pm.environment.get('EMAIL')) pm.environment.set('EMAIL', `u${Date.now()}@example.com`);",
+                  "if(!pm.environment.get('PASSWORD')) pm.environment.set('PASSWORD', 'secret1234');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', ()=>pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.environment.set('USER_ID', b.user.id);",
+                  "pm.test('User id saved', ()=> pm.environment.get('USER_ID'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"TestUser\",\n  \"email\": \"{{EMAIL}}\",\n  \"password\": \"{{PASSWORD}}\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/auth/register",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login (200) \u2014 save token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));",
+                  "const b = pm.response.json(); pm.environment.set('ACCESS_TOKEN', b.access_token||'');",
+                  "pm.test('Token saved', ()=> pm.environment.get('ACCESS_TOKEN').length>0);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{EMAIL}}\",\n  \"password\": \"{{PASSWORD}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/auth/login",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Me (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));",
+                  "pm.test('Has email', ()=> pm.response.json().email);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/auth/me",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Role checks",
+      "item": [
+        {
+          "name": "Admin-only (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK (admin)', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin-only",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin-only"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Operator-or-admin (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK (admin/operator)', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/operator-or-admin",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "operator-or-admin"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Warehouses",
+      "item": [
+        {
+          "name": "List (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', ()=>pm.response.to.have.status(201));",
+                  "const b = pm.response.json(); pm.environment.set('WAREHOUSE_ID', b.id);",
+                  "pm.test('WAREHOUSE_ID saved', ()=> pm.environment.get('WAREHOUSE_ID'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main\",\n  \"address\": \"Kaunas\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get by ID (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));",
+                  "pm.test('ID matches', ()=> pm.response.json().id == parseInt(pm.environment.get('WAREHOUSE_ID')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses/{{WAREHOUSE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses",
+                "{{WAREHOUSE_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));",
+                  "pm.test('Updated name', ()=> pm.response.json().name==='Updated');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated\",\n  \"address\": \"Vilnius\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses/{{WAREHOUSE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses",
+                "{{WAREHOUSE_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete (204/200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.expect([200,204]).to.include(pm.response.code);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses/{{WAREHOUSE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses",
+                "{{WAREHOUSE_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get deleted (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', ()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses/{{WAREHOUSE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses",
+                "{{WAREHOUSE_ID}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shipments",
+      "item": [
+        {
+          "name": "List (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/shipments",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', ()=>pm.response.to.have.status(201));",
+                  "const b = pm.response.json(); pm.environment.set('SHIPMENT_ID', b.id);",
+                  "pm.test('SHIPMENT_ID saved', ()=> pm.environment.get('SHIPMENT_ID'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SHP-9001\",\n  \"status\": \"created\",\n  \"warehouse_id\": \"{{WAREHOUSE_ID}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/shipments",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get by ID (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/shipments/{{SHIPMENT_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments",
+                "{{SHIPMENT_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));",
+                  "pm.test('Status updated', ()=> pm.response.json().status==='in_transit');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_transit\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/shipments/{{SHIPMENT_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments",
+                "{{SHIPMENT_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete (204/200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.expect([200,204]).to.include(pm.response.code);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/shipments/{{SHIPMENT_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments",
+                "{{SHIPMENT_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get deleted (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', ()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/shipments/{{SHIPMENT_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shipments",
+                "{{SHIPMENT_ID}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Packages",
+      "item": [
+        {
+          "name": "List (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/packages",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packages"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', ()=>pm.response.to.have.status(201));",
+                  "const b = pm.response.json(); pm.environment.set('PACKAGE_ID', b.id);",
+                  "pm.test('PACKAGE_ID saved', ()=> pm.environment.get('PACKAGE_ID'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shipment_id\": \"{{SHIPMENT_ID}}\",\n  \"weight\": 2.5,\n  \"length\": 25.0,\n  \"width\": 18.0,\n  \"height\": 10.0,\n  \"fragile\": true,\n  \"description\": \"Electronics\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/packages",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packages"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get by ID (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/packages/{{PACKAGE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packages",
+                "{{PACKAGE_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', ()=>pm.response.to.have.status(200));",
+                  "pm.test('Weight updated', ()=> pm.response.json().weight==3.0);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"weight\": 3.0,\n  \"fragile\": false\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/packages/{{PACKAGE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packages",
+                "{{PACKAGE_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete (204/200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.expect([200,204]).to.include(pm.response.code);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{ACCESS_TOKEN}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/packages/{{PACKAGE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packages",
+                "{{PACKAGE_ID}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get deleted (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', ()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/packages/{{PACKAGE_ID}}",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "packages",
+                "{{PACKAGE_ID}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Negative",
+      "item": [
+        {
+          "name": "Register duplicate (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422 Unprocessable', ()=>pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dup\",\n  \"email\": \"{{EMAIL}}\",\n  \"password\": \"{{PASSWORD}}\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/auth/register",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create warehouse as guest (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthenticated', ()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"GuestTry\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get missing warehouse (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', ()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": null,
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null,
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/warehouses/999999",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "warehouses",
+                "999999"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ping (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', ()=>pm.response.to.have.status(200));",
+              "pm.test('JSON', ()=> /application\\/json/i.test(pm.response.headers.get('Content-Type')||''));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": null,
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": null,
+        "url": {
+          "raw": "{{BASE_URL}}/api/v1/ping",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "ping"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "EMAIL",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "PASSWORD",
+      "value": "secret1234",
+      "type": "string"
+    },
+    {
+      "key": "ACCESS_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "WAREHOUSE_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "SHIPMENT_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "PACKAGE_ID",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
