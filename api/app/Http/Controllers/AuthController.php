@@ -14,7 +14,7 @@ class AuthController extends Controller
         'name'     => ['required','string','max:255'],
         'email'    => ['required','email','max:255','unique:users,email'],
         'password' => ['required','string','min:8'],
-        'role'     => ['in:guest,operator,admin'], // optional
+        'role'     => ['in:guest,operator,admin'],
     ]);
 
     $user = User::create([
@@ -24,13 +24,11 @@ class AuthController extends Controller
         'role'     => $data['role'] ?? 'guest',
     ]);
 
-    // Bandome automatiškai prisiloginti ir grąžinti JWT, kad kiti testai turėtų tokeną
+
     $token = null;
     try {
-        // veikia su php-open-source-saver/jwt-auth
         $token = auth('api')->login($user);
     } catch (\Throwable $e) {
-        // jei JWT dar nesukonfigūruotas – vis tiek 201, tik be tokeno
     }
 
     return response()->json([

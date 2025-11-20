@@ -9,15 +9,18 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        $user = auth('api')->user(); // or auth()->user()
-
-        // Not authenticated -> 401 (UNAUTHORIZED)
-        if (! $user) {
+        if (! auth('api')->check()) {
             return response()->json(['error' => 'unauthorized'], 401);
         }
 
-        // Authenticated but not allowed -> 403 (FORBIDDEN)
-        if (! in_array($user->role, $roles, true)) {
+        $roleFromToken = auth('api')->payload()->get('role');
+
+        if ($roleFromToken === null) {
+            $user = auth('api')->user();
+            $roleFromToken = $user?->role;
+        }
+
+        if (! in_array($roleFromToken, $roles, true)) {
             return response()->json(['error' => 'forbidden'], 403);
         }
 
