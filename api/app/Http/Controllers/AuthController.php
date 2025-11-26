@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\RefreshToken;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
 
 class AuthController extends Controller
 {
@@ -45,33 +49,90 @@ class AuthController extends Controller
 }
 
 
-    public function login(Request $r){
-        $cred = $r->validate([
-            'email'=>'required|email',
-            'password'=>'required'
-        ]);
-        if (!$token = auth('api')->attempt($cred)) {
-            return response()->json(['error'=>'invalid_credentials'], 401);
-        }
-        return $this->respondWithToken($token);
+public function login(Request $r)
+{
+    $cred = $r->validate([
+        'email' => 'required|email',
+        'password' => 'required'
+    ]);
+
+    if (! $token = auth('api')->attempt($cred)) {
+        return response()->json(['error' => 'invalid_credentials'], 401);
     }
+
+    $user = auth('api')->user();
+
+    $plainRefreshToken = Str::random(64);
+
+    RefreshToken::create([
+        'user_id'    => $user->id,
+        'token_hash' => hash('sha256', $plainRefreshToken),
+        'expires_at' => now()->addDays(7),
+        'revoked'    => false,
+    ]);
+
+    return response()->json([
+        'access_token'  => $token,
+        'refresh_token' => $plainRefreshToken,
+        'token_type'    => 'bearer',
+        'expires_in'    => auth('api')->factory()->getTTL() * 60,
+    ]);
+}
+
 
     public function me(){ return response()->json(auth('api')->user()); }
 
-    public function logout(){
-        auth('api')->logout();
-        return response()->noContent(); // 204
+    public function logout()
+{
+    $user = auth('api')->user();
+
+    auth('api')->logout();
+
+    if ($user) {
+        $user->refreshTokens()->update(['revoked' => true]);
     }
 
-    public function refresh(){
-        return $this->respondWithToken(auth('api')->refresh());
+    return response()->noContent();
+}
+
+    public function refreshToken(Request $request)
+{
+    $data = $request->validate([
+        'refresh_token' => ['required', 'string'],
+    ]);
+
+    $hashed = hash('sha256', $data['refresh_token']);
+
+    $stored = RefreshToken::where('token_hash', $hashed)
+        ->where('revoked', false)
+        ->where('expires_at', '>', now())
+        ->first();
+
+    if (! $stored) {
+        return response()->json(['error' => 'invalid_refresh_token'], 401);
     }
 
-    protected function respondWithToken($token){
-        return response()->json([
-            'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => auth('api')->factory()->getTTL() * 60
-        ]);
-    }
+    $user = $stored->user;
+
+    $stored->update(['revoked' => true]);
+
+    $newAccessToken = auth('api')->login($user);
+
+    $newPlainRefreshToken = Str::random(64);
+
+    RefreshToken::create([
+        'user_id'    => $user->id,
+        'token_hash' => hash('sha256', $newPlainRefreshToken),
+        'expires_at' => now()->addDays(7),
+        'revoked'    => false,
+    ]);
+
+    return response()->json([
+        'access_token'  => $newAccessToken,
+        'token_type'    => 'bearer',
+        'expires_in'    => auth('api')->factory()->getTTL() * 60,
+        'refresh_token' => $newPlainRefreshToken,
+    ]);
+}
+
 }
