@@ -137,8 +137,8 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 Wireframe’ams galima panaudoti bet kokį įrankį (draw.io, Figma, ranka ir nuskanuoti). Pasiūlyti langai:
 
 1. **Prisijungimo langas**
-   - Forma su el. paštu ir slaptažodžiu, „Prisijungti“ mygtukas.
-   - Nuoroda į registraciją.
+<img width="2484" height="1884" alt="image" src="https://github.com/user-attachments/assets/4ff9ef72-421d-4d59-b280-b50fe808e723" />
+
 
 2. **Dashboard**
    - Viršuje – navigacija (Dashboard, Sandėliai, Siuntos, Paketai).
