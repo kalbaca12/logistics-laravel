@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <title>Logistics Panel – REST API UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+    <!-- Font Awesome (vektorinės ikonos) -->
+    <!-- Font Awesome (vektorinės ikonos) -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner container">
+        <div class="logo">
+            <i class="fa-solid fa-truck-fast"></i>
+            <span>Logistics Panel</span>
+        </div>
+
+        <!-- Desktop navigation -->
+        <nav class="main-nav">
+            <ul>
+                <li><a href="#" data-view="view-dashboard">Dashboard</a></li>
+                <li><a href="#" data-view="view-warehouses">Sandėliai</a></li>
+                <li><a href="#" data-view="view-shipments">Siuntos</a></li>
+                <li><a href="#" data-view="view-packages">Paketai</a></li>
+                <li><a href="#" data-view="view-create-shipment">Nauja siunta</a></li>
+                <li><a href="#" data-view="view-account">Paskyra</a></li>
+            </ul>
+        </nav>
+
+        <div class="auth-actions">
+            <button id="btn-nav-login" class="btn btn-ghost" data-view="view-login">
+                <i class="fa-solid fa-right-to-bracket"></i> Login
+            </button>
+            <button id="btn-nav-logout" class="btn btn-danger">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+
+        <!-- Hamburger (mobile) -->
+        <button id="hamburger" class="hamburger" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <!-- Mobile navigation -->
+    <div class="mobile-nav" id="mobile-nav">
+        <ul>
+            <li><a href="#" data-view="view-dashboard">Dashboard</a></li>
+            <li><a href="#" data-view="view-warehouses">Sandėliai</a></li>
+            <li><a href="#" data-view="view-shipments">Siuntos</a></li>
+            <li><a href="#" data-view="view-packages">Paketai</a></li>
+            <li><a href="#" data-view="view-create-shipment">Nauja siunta</a></li>
+            <li><a href="#" data-view="view-account">Paskyra</a></li>
+            <li><a href="#" data-view="view-login">Login</a></li>
+        </ul>
+    </div>
+</header>
+
+<main class="site-content container">
+
+    <!-- LOGIN VIEW -->
+    <section id="view-login" class="view active">
+        <div class="card form-card">
+            <h1>Prisijungimas</h1>
+            <p class="muted">Prisijunk prie logistikos valdymo sistemos.</p>
+            <form id="form-login" class="form">
+                <div class="form-group">
+                    <label for="login-email">El. paštas</label>
+                    <input type="email" id="login-email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Slaptažodis</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </button>
+            </form>
+
+            <p class="switch-auth">
+                Neturi paskyros?
+                <button type="button" class="link-btn" data-view="view-register">
+                    Registruokis
+                </button>
+            </p>
+        </div>
+    </section>
+
+    <!-- REGISTER VIEW -->
+    <section id="view-register" class="view">
+        <div class="card form-card">
+            <h1>Registracija</h1>
+            <p class="muted">Sukurti naują naudotojo paskyrą.</p>
+            <form id="form-register" class="form">
+                <div class="form-group">
+                    <label for="reg-name">Vardas</label>
+                    <input type="text" id="reg-name" required placeholder="Vardas">
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">El. paštas</label>
+                    <input type="email" id="reg-email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="reg-role">Rolė</label>
+                    <select id="reg-role">
+                        <option value="operator">Operatorius</option>
+                        <option value="admin">Administratorius</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Slaptažodis</label>
+                    <input type="password" id="reg-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password-confirm">Pakartoti slaptažodį</label>
+                    <input type="password" id="reg-password-confirm" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-user-plus"></i> Registruoti
+                </button>
+            </form>
+
+            <p class="switch-auth">
+                Jau turi paskyrą?
+                <button type="button" class="link-btn" data-view="view-login">
+                    Prisijunk
+                </button>
+            </p>
+        </div>
+    </section>
+
+    <!-- DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view">
+        <h1>Dashboard</h1>
+            <img src="../images/logistics.png" 
+            alt="Logistikos iliustracija" 
+            class="responsive-image" 
+            style="max-width: 600px; width: 100%; display:block; margin: 0 auto 20px;" />
+        <p class="muted">Bendra sandėlių, siuntų ir paketų apžvalga.</p>
+
+        <div class="grid-3">
+            <div class="card stat-card">
+                <h2><i class="fa-solid fa-warehouse"></i> Sandėliai</h2>
+                <p id="stat-warehouses" class="stat-number">–</p>
+            </div>
+            <div class="card stat-card">
+                <h2><i class="fa-solid fa-box"></i> Siuntos</h2>
+                <p id="stat-shipments" class="stat-number">–</p>
+            </div>
+            <div class="card stat-card">
+                <h2><i class="fa-solid fa-cubes"></i> Paketai</h2>
+                <p id="stat-packages" class="stat-number">–</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- WAREHOUSES VIEW -->
+    <section id="view-warehouses" class="view">
+        <div class="view-header">
+            <h1>Sandėliai</h1>
+            <button id="btn-open-create-warehouse" class="btn btn-secondary">
+                <i class="fa-solid fa-warehouse"></i> Naujas sandėlis
+            </button>
+        </div>
+
+        <div class="card">
+            <p class="muted">
+                Pasirink sandėlį, kad pamatytum siuntas, kurios jam priklauso.
+            </p>
+        </div>
+
+        <div class="card table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Pavadinimas</th>
+                        <th>Adresas</th>
+                        <th>Veiksmai</th>
+                    </tr>
+                    </thead>
+                    <tbody id="warehouses-table-body">
+                    <!-- JS užpildys -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- SHIPMENTS VIEW -->
+    <section id="view-shipments" class="view">
+        <div class="view-header">
+            <h1>Siuntos</h1>
+            <button class="btn btn-secondary" data-view="view-create-shipment">
+                <i class="fa-solid fa-plus"></i> Nauja siunta
+            </button>
+        </div>
+
+        <div class="card">
+            <form id="form-filter-shipments" class="form form-inline">
+                <div class="form-group">
+                    <label for="filter-status">Statusas</label>
+                    <select id="filter-status">
+                        <option value="">Visi</option>
+                        <option value="pending">Laukianti</option>
+                        <option value="in_transit">Kelyje</option>
+                        <option value="delivered">Pristatyta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-code">Kodas</label>
+                    <input type="text" id="filter-code" placeholder="Siuntos kodas">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-filter"></i> Filtruoti (front-end)
+                </button>
+            </form>
+        </div>
+
+        <div class="card table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kodas</th>
+                        <th>Statusas</th>
+                        <th>Sandėlis</th>
+                        <th>Veiksmai</th>
+                    </tr>
+                    </thead>
+                    <tbody id="shipments-table-body">
+                    <!-- JS užpildys -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PACKAGES VIEW -->
+    <section id="view-packages" class="view">
+        <div class="view-header">
+            <h1>Paketai</h1>
+        </div>
+
+        <div class="card">
+            <p class="muted">
+                Visi sistemos paketai. Paspaudus „Siunta“ pamatysi susietos siuntos informaciją.
+            </p>
+        </div>
+
+        <div class="card table-card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Aprašymas</th>
+                        <th>Svoris</th>
+                        <th>Išmatavimai (L×W×H)</th>
+                        <th>Dūžtantis</th>
+                        <th>Siunta</th>
+                    </tr>
+                    </thead>
+                    <tbody id="packages-table-body">
+                    <!-- JS užpildys -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- CREATE SHIPMENT VIEW -->
+    <section id="view-create-shipment" class="view">
+        <h1>Naujos siuntos sukūrimas</h1>
+
+        <div class="card form-card">
+            <form id="form-create-shipment" class="form">
+                <div class="form-group">
+                    <label for="cs-code">Siuntos kodas</label>
+                    <input type="text" id="cs-code" required placeholder="PVZ-2025-0001">
+                </div>
+
+                <div class="form-group">
+                    <label for="cs-warehouse">Sandėlis</label>
+                    <select id="cs-warehouse" required>
+                        <!-- JS užpildys sandėlius -->
+                    </select>
+                </div>
+
+                <div class="form-group form-group-row">
+                    <label>Statusas</label>
+                    <div class="inline-options">
+                        <label><input type="radio" name="cs-status" value="pending" checked> Laukianti</label>
+                        <label><input type="radio" name="cs-status" value="in_transit"> Kelyje</label>
+                        <label><input type="radio" name="cs-status" value="delivered"> Pristatyta</label>
+                    </div>
+                </div>
+
+                <!-- Tik UI reikalavimams (įvairūs input tipai) -->
+                <div class="form-group">
+                    <label for="cs-weight-ui">Numanomas siuntos svoris (kg)</label>
+                    <input type="number" id="cs-weight-ui" min="0" step="0.1" placeholder="Tik informacinis laukas">
+                </div>
+
+                <div class="form-group">
+                    <label for="cs-date-ui">Planuojama išsiuntimo data</label>
+                    <input type="date" id="cs-date-ui">
+                </div>
+
+                <div class="form-group form-group-row">
+                    <label>Paslaugos</label>
+                    <div class="inline-options">
+                        <label><input type="checkbox" id="cs-insured-ui"> Draudimas</label>
+                        <label><input type="checkbox" id="cs-fragile-ui"> Dūžtanti siunta</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Kurti siuntą
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- ACCOUNT VIEW -->
+    <section id="view-account" class="view">
+        <h1>Mano paskyra</h1>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>Vartotojo informacija</h2>
+                <p><strong>Vardas:</strong> <span id="acc-name">–</span></p>
+                <p><strong>El. paštas:</strong> <span id="acc-email">–</span></p>
+                <p><strong>Rolė:</strong> <span id="acc-role">–</span></p>
+            </div>
+
+            <div class="card">
+                <h2>Slaptažodžio keitimas (tik UI)</h2>
+                <form id="form-change-password" class="form">
+                    <div class="form-group">
+                        <label for="cp-old-password">Senas slaptažodis</label>
+                        <input type="password" id="cp-old-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="cp-new-password">Naujas slaptažodis</label>
+                        <input type="password" id="cp-new-password">
+                    </div>
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fa-solid fa-key"></i> (Demo) Keisti slaptažodį
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <div class="footer-column">
+            <h3>Apie projektą</h3>
+            <p class="muted">
+                Logistikos siuntų valdymo naudotojo sąsaja, jungiama prie Laravel REST API.
+            </p>
+        </div>
+        <div class="footer-column">
+            <h3>Nuorodos</h3>
+            <ul>
+                <li><a href="#" data-view="view-dashboard">Dashboard</a></li>
+                <li><a href="#" data-view="view-warehouses">Sandėliai</a></li>
+                <li><a href="#" data-view="view-shipments">Siuntos</a></li>
+                <li><a href="#" data-view="view-packages">Paketai</a></li>
+                <li><a href="#" data-view="view-account">Paskyra</a></li>
+            </ul>
+        </div>
+        <div class="footer-column">
+            <h3>Social</h3>
+            <div class="footer-icons">
+                <a href="#"><i class="fa-brands fa-github"></i></a>
+                <a href="#"><i class="fa-brands fa-discord"></i></a>
+                <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- MODAL -->
+<div id="modal-backdrop" class="modal-backdrop"></div>
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <button id="modal-close" class="modal-close" aria-label="Uždaryti">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2 id="modal-title">Informacija</h2>
+        <div id="modal-body"></div>
+        <div class="modal-footer">
+            <button id="modal-footer-close" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left"></i> Uždaryti
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
