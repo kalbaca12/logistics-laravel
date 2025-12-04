@@ -1,92 +1,234 @@
-## Aplinka
+# Logistikos REST API ir naudotojo sąsajos projektas
 
-- PHP 8.2+
-- Composer
-- Laravel (projektas jau paruoštas)
-- DB: SQLite
+## 1. Sprendžiamo uždavinio aprašymas
 
-## Startas
+### 1.1. Sistemos paskirtis
 
-```bash
-composer install
-copy .env.example .env
-php artisan key:generate
-php artisan jwt:secret --force
-mkdir database 2>$null
-type NUL > database\database.sqlite
+Projekto tikslas – sukurti paprastą logistikos valdymo sistemą, leidžiančią valdyti:
 
-# DB_CONNECTION=sqlite
-# DB_DATABASE=database/database.sqlite
-# CACHE_DRIVER=file
-# SESSION_DRIVER=file
-# QUEUE_CONNECTION=sync
+- **sandėlius**,
+- **siuntas**,
+- **siuntų paketus**.
 
-php artisan config:clear
+Sistema realizuota kaip **REST API (Laravel)** ir **lengvas front-end** (vienas HTML/CSS/JS puslapis), skirtas patogiai išbandyti ir demonstruoti API funkcionalumą.
 
-php artisan migrate --seed
+Tipiniai naudotojai:
 
-php artisan serve
-```
+- **Administratorius** – prižiūri sandėlių sąrašą, gali kurti / redaguoti / trinti sandėlius, valdyti siuntas ir paketus.
+- **Operatorius** – dirba su siuntomis ir paketais (kuria naujas siuntas, priskiria paketus).
+- **Svečas (guest)** – gali tik peržiūrėti sandėlių, siuntų ir paketų sąrašus per API ir UI, bet negali keisti duomenų.
 
-## Autentifikacija
+Sistema orientuota į mokymosi tikslus – parodyti, kaip:
 
-- Prisijungimas grąžina **JWT**.
-- Protected maršrutai naudoja `jwt.auth` (o rolės tikrinamos `role:...` vidiniu middleware).
-
-## Postman
-
-Importuokite:
-- Kolekciją: **Logistics_API_Lab1_FULL_with_tests.postman_collection.json**
-- Aplinką: **Logistics_API_Local_with_tests.postman_environment.json**
-
-Paleidimo seka:
-1. **Auth/Register** (sugeneruoja `EMAIL` jei tuščias) → **201/422**
-2. **Auth/Login** (išsaugo `ACCESS_TOKEN`) → **200**
-3. **Auth/Me** → **200**
-4. **Warehouses/Create** → **201** (jei role=admin) / **403** (jei ne)
-5. **Negative**: 404, 422, 401 testai
-
-## OpenAPI specifikacija
-
-Failas: `openapi.yaml`
-
-https://editor.swagger.io
-
-## Greita demonstracija
-
-1. `GET /api/v1/ping` → **200**
-2. `POST /api/v1/auth/register` → **201**
-3. `POST /api/v1/auth/login` → **200** (išsaugomas token)
-4. `GET /api/v1/auth/me` → **200**
-5. `GET /api/v1/admin-only` → **403** (kol ne admin)
-6. (pasikeliame rolę į `admin`, arba registracijos metu paduodame `"role":"admin"`)
-7. `POST /api/v1/warehouses` → **201**
-8. `GET /api/v1/warehouses` → **200**
-9. `GET /api/v1/warehouses/{id}` → **200**
-10. `PUT /api/v1/warehouses/{id}` → **200**
-11. `DELETE /api/v1/warehouses/{id}` → **204**
-12. `GET /api/v1/warehouses/999999` → **404**
-13. `POST /api/v1/auth/register` (dupl. email) → **422**
-14. `POST /api/v1/auth/logout` → **200/204**
-15. Vėl **GET /api/v1/auth/me** (su senu token) → **401**
-
-## Teisingi statusai
-
-- **201** – resursas sukurtas
-- **200** – sėkminga užklausa
-- **204** – sėkmingas ištrynimas (be body)
-- **401** – neprisijungęs / neteisingas tokenas
-- **403** – prisijungęs, bet neturi teisės
-- **404** – nerasta
-- **422** – blogas payload (validation)
-- **405** – neteisingas HTTP metodas
-
-## Struktūra (svarbiausi failai)
-
-- `routes/api.php` – maršrutai (JWT + rolės)
-- `app/Http/Controllers/*Controller.php` – CRUD logika
-- `app/Http/Middleware/RoleMiddleware.php` – rolės tikrinimas (401 jei neprisijungęs, 403 jei rolė neteisinga)
-- `bootstrap/app.php` – nuosekli JSON klaidų grąža API keliams
-- `openapi.yaml` – OpenAPI specifikacija (visi metodai)
+- sukurti REST API su **roles-based** autentifikacija,
+- naudoti **JWT** ir **refresh tokenus**,
+- ant viršaus uždėti paprastą, **responsyvią naudotojo sąsają**.
 
 ---
+
+### 1.2. Funkciniai reikalavimai
+
+Sistema realizuoja šias funkcijas:
+
+**Autentifikacija ir rolės**
+
+- Vartotojas gali **užsiregistruoti** (POST `/api/v1/auth/register`).
+- Vartotojas gali **prisijungti** (POST `/api/v1/auth/login`) ir gauti:
+  - `access_token` (trumpalaikis),
+  - `refresh_token` (ilgesnio galiojimo).
+- Vartotojas gali gauti **informaciją apie save** (GET `/api/v1/auth/me`).
+- Vartotojas gali **atsijungti** (POST `/api/v1/auth/logout`).
+- **Admin** ir **Operator** rolės nustatomos `role` lauku naudotojo įraše.
+- Prieiga prie dalies API metodų ribojama pagal rolę:
+
+  - tik **admin** gali kurti / redaguoti / trinti sandėlius;
+  - **admin** ir **operatorius** gali kurti / redaguoti / trinti siuntas ir paketus;
+  - **guest** gali tik skaityti (GET).
+
+**Sandėlių valdymas**
+
+- Peržiūrėti visus sandėlius: `GET /api/v1/warehouses`.
+- Peržiūrėti konkretų sandėlį: `GET /api/v1/warehouses/{id}`.
+- (Admin) sukurti naują sandėlį: `POST /api/v1/warehouses`.
+- (Admin) atnaujinti sandėlio duomenis: `PUT /api/v1/warehouses/{id}`.
+- (Admin) ištrinti sandėlį: `DELETE /api/v1/warehouses/{id}`.
+
+**Siuntų valdymas**
+
+- Peržiūrėti visas siuntas: `GET /api/v1/shipments` (su filtravimu UI pusėje).
+- Peržiūrėti konkrečią siuntą: `GET /api/v1/shipments/{id}`.
+- (Operator / Admin) sukurti naują siuntą: `POST /api/v1/shipments`.
+- (Operator / Admin) atnaujinti siuntos būseną ir duomenis: `PUT /api/v1/shipments/{id}`.
+- (Operator / Admin) ištrinti siuntą: `DELETE /api/v1/shipments/{id}`.
+- Gauti konkretios siuntos paketus: `GET /api/v1/shipments/{id}/packages`.
+
+**Paketų valdymas**
+
+- Peržiūrėti visus paketus: `GET /api/v1/packages`.
+- Peržiūrėti konkretų paketą: `GET /api/v1/packages/{id}`.
+- (Operator / Admin) sukurti naują paketą konkrečiai siuntai: `POST /api/v1/packages` (su `shipment_id`).
+- (Operator / Admin) atnaujinti paketo duomenis: `PUT /api/v1/packages/{id}`.
+- (Operator / Admin) ištrinti paketą: `DELETE /api/v1/packages/{id}`.
+
+**Front-end funkcijos**
+
+- Prisijungimo / registracijos formos su vaidmenų (rolės) atvaizdavimu.
+- **Dashboard** su santrumpomis:
+  - sandėlių skaičius,
+  - siuntų skaičius,
+  - paketų skaičius,
+  - demonstracinė logistikos iliustracija.
+- **Sandėlių langas**:
+  - lentelė su sandėlių sąrašu,
+  - mygtukas *„Naujas sandėlis“* (admin tik),
+  - sandėlio „Siuntos“ mygtukas, atidarantis modalinį langą su to sandėlio siuntomis.
+- **Siuntų langas**:
+  - lentelė su siuntomis,
+  - filtravimas pagal statusą ir kodą,
+  - „Detalės“ mygtukas (modalas),
+  - „Paketai“ mygtukas (modalas),
+  - „Naujas paketas“ mygtukas – atskiras modalas naujam paketui kurti.
+- **Paketų langas**:
+  - lentelė su visais paketais,
+  - mygtukas „Siunta #id“, parodantis susijusią siuntą.
+- Visi veiksmai vykdomi per REST API naudojant **fetch** ir **JWT**.
+
+---
+
+## 2. Sistemos architektūra
+
+Sistema sudaryta iš trijų pagrindinių komponentų:
+
+1. **Naudotojo naršyklė (Front-end)**  
+   - Vienas `index.html` puslapis.  
+   - Stiliai – `style.css`.  
+   - Logika – `app.js`.  
+   - Bendrauja su back-end REST API per `fetch` HTTP užklausas (`/api/v1/...`).
+   - Access token saugomas `localStorage`, jei reikia – naudojamas `refresh_token`.
+
+2. **Laravel aplikacija (Back-end / API)**  
+   - PHP + Laravel karkasas.
+   - API maršrutai: `routes/api.php`.
+   - Kontroleriai: `AuthController`, `WarehouseController`, `ShipmentController`, `PackageController`.
+   - Middleware:
+     - `auth:api` (JWT autentifikacija),
+     - `role` (rolėms tikrinti).
+   - Naudoja `JWTAuth` biblioteką ir atskirą `RefreshToken` modelį ilgesnio galiojimo žetonams.
+
+3. **Duomenų bazė**  
+   - Laravel Eloquent modeliai: `User`, `Warehouse`, `Shipment`, `Package`, `RefreshToken`.
+   - Tipinė struktūra:
+     - `warehouses` – sandėlių informacija (pavadinimas, adresas).
+     - `shipments` – siuntų kodai, statusai, ryšys su sandėliu ir naudotoju.
+     - `packages` – paketo aprašymas, svoris, išmatavimai, ar dūžtantis, ryšys su siunta.
+     - `users` – naudotojai, rolės, slaptažodžiai (hash).
+     - `refresh_tokens` – galiojantys atnaujinimo žetonai.
+
+### 2.1. UML deployment diagrama (žodinis aprašymas)
+
+Deployment diagramoje pakanka pavaizduoti 3 mazgus:
+
+- **Client (Browser)**  
+  - Artifact: `index.html`, `style.css`, `app.js`.
+
+- **Web server / Application server**  
+  - Node: `Laravel app` (PHP).  
+  - Artifact: aplikacijos kodas (kontroleriai, modeliai, middleware, API maršrutai).  
+  - Ryšys: HTTP(S) 80/443 prievadu su klientu.
+
+- **DB server**  
+  - Node: `MySQL` arba `SQLite`.  
+  - Artifact: projekto DB schema.  
+  - Ryšys: vidinis ryšys su Laravel aplikacija (pvz., per `pdo_mysql`).
+
+Diagramos pavyzdys (ką reikia nusibraižyti):
+
+- [Browser] --HTTP--> [Laravel API] --SQL--> [DB]
+
+---
+
+## 3. Naudotojo sąsajos projektas
+
+### 3.1. Wireframe’ai
+
+Wireframe’ams galima panaudoti bet kokį įrankį (draw.io, Figma, ranka ir nuskanuoti). Pasiūlyti langai:
+
+1. **Prisijungimo langas**
+   - Forma su el. paštu ir slaptažodžiu, „Prisijungti“ mygtukas.
+   - Nuoroda į registraciją.
+
+2. **Dashboard**
+   - Viršuje – navigacija (Dashboard, Sandėliai, Siuntos, Paketai).
+   - 3 statistikos kortelės (Sandėliai, Siuntos, Paketai).
+   - Logistikos iliustracinis paveikslėlis.
+
+3. **Sandėlių langas**
+   - Lentelė su stulpeliais: ID, pavadinimas, adresas, veiksmai.
+   - Mygtukas „Naujas sandėlis“.
+   - Veiksmai: „Siuntos“ (atidaro modalą).
+
+4. **Siuntų langas**
+   - Filtrai viršuje (statusas, kodas).
+   - Lentelė su stulpeliais: ID, kodas, statusas, sandėlis, veiksmai.
+   - Veiksmai: „Detalės“, „Paketai“, „Naujas paketas“.
+
+5. **Paketų langas**
+   - Lentelė: ID, aprašymas, svoris, išmatavimai, dūžtantis, susijusi siunta.
+   - Mygtukas „Siunta #id“.
+
+6. **Modaliniai langai**
+   - „Siunta #id – paketai“ (lentelė + „Naujas paketas“ forma).
+   - „Naujas sandėlis“ forma.
+   - Klaidos / informaciniai pranešimai.
+
+### 3.2. Realizacijos ekrano iškarpos
+
+Prie wireframe’ų ataskaitoje pridėti atitinkamas:
+
+- Prijungimo ekrano screenshot.
+- Dashboard screenshot.
+- Sandėlių, Siuntų, Paketų langų screenshot’us.
+- Bent vieno modalo (pvz., „Siunta #1 – paketai“) screenshot.
+
+---
+
+## 4. API specifikacija (OpenAPI)
+
+Pilna API specifikacija aprašoma atskirame faile:
+
+- `api-spec.yaml` (OpenAPI 3.0 formatas).
+
+README / ataskaitoje galima palikti nuorodą:
+
+> Išsami API specifikacija pateikta faile **`api-spec.yaml`**, kuriame aprašyti visi maršrutai, modeliai ir pavyzdiniai atsakymai.
+
+### 4.1. Pagrindiniai endpoint’ai (santrauka)
+
+| Metodas | Kelias                          | Aprašymas                            | Autentifikacija / rolė          |
+|--------|----------------------------------|--------------------------------------|---------------------------------|
+| POST   | `/api/v1/auth/register`         | Registracija                         | vieša                           |
+| POST   | `/api/v1/auth/login`            | Prisijungimas                        | vieša                           |
+| POST   | `/api/v1/auth/refresh`          | Access token atnaujinimas            | vieša (su validžiu refresh)     |
+| GET    | `/api/v1/auth/me`               | Prisijungusio vartotojo info         | `auth:api`                      |
+| POST   | `/api/v1/auth/logout`           | Atsijungimas                         | `auth:api`                      |
+| GET    | `/api/v1/warehouses`            | Sandėlių sąrašas                     | vieša                           |
+| POST   | `/api/v1/warehouses`            | Naujas sandėlis                      | `auth:api`, `role:admin`        |
+| GET    | `/api/v1/shipments`             | Siuntų sąrašas                       | vieša                           |
+| POST   | `/api/v1/shipments`             | Nauja siunta                         | `auth:api`, `role:operator,admin` |
+| GET    | `/api/v1/shipments/{id}`        | Konkreti siunta                      | vieša                           |
+| GET    | `/api/v1/shipments/{id}/packages` | Konkrečios siuntos paketai         | `auth:api` (su JWT/refresh)     |
+| POST   | `/api/v1/packages`              | Naujas paketas siuntai               | `auth:api`, `role:operator,admin` |
+| GET    | `/api/v1/packages`              | Paketų sąrašas                       | vieša                           |
+
+### 4.2. Pavyzdys: prisijungimas
+
+**Užklausa**
+
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password"
+}
