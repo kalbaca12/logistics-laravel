@@ -126,24 +126,7 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 
 ### 2.1. UML deployment diagrama (žodinis aprašymas)
 
-Deployment diagramoje pakanka pavaizduoti 3 mazgus:
-
-- **Client (Browser)**  
-  - Artifact: `index.html`, `style.css`, `app.js`.
-
-- **Web server / Application server**  
-  - Node: `Laravel app` (PHP).  
-  - Artifact: aplikacijos kodas (kontroleriai, modeliai, middleware, API maršrutai).  
-  - Ryšys: HTTP(S) 80/443 prievadu su klientu.
-
-- **DB server**  
-  - Node: `MySQL` arba `SQLite`.  
-  - Artifact: projekto DB schema.  
-  - Ryšys: vidinis ryšys su Laravel aplikacija (pvz., per `pdo_mysql`).
-
-Diagramos pavyzdys (ką reikia nusibraižyti):
-
-- [Browser] --HTTP--> [Laravel API] --SQL--> [DB]
+<img width="801" height="559" alt="image" src="https://github.com/user-attachments/assets/d395d979-0c26-44fe-aef3-a86a1d952c19" />
 
 ---
 
