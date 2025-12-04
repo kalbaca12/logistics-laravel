@@ -1,0 +1,348 @@
+openapi: 3.0.3
+info:
+  title: Logistics Management API
+  version: 1.0.0
+  description: >
+    REST API for warehouse, shipment and package management.
+    Authentication uses JWT access tokens + refresh tokens.
+
+servers:
+  - url: http://localhost:8000/api/v1
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        expires_in:
+          type: integer
+          example: 3600
+
+    Warehouse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        address:
+          type: string
+
+    Shipment:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        status:
+          type: string
+          enum: [created, in_transit, arrived]
+        warehouse_id:
+          type: integer
+
+    Package:
+      type: object
+      properties:
+        id:
+          type: integer
+        shipment_id:
+          type: integer
+        description:
+          type: string
+        weight:
+          type: number
+          format: float
+        length:
+          type: number
+          format: float
+        width:
+          type: number
+          format: float
+        height:
+          type: number
+          format: float
+        fragile:
+          type: boolean
+
+paths:
+
+  # --------------------------------------------------------
+  # AUTHENTICATION
+  # --------------------------------------------------------
+  /auth/login:
+    post:
+      summary: Login and receive JWT & refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token using valid refresh token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: New access token issued
+        '401':
+          description: Invalid or expired refresh token
+
+  /auth/me:
+    get:
+      summary: Return authenticated user info
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User details returned
+        '401':
+          description: Not authenticated
+
+  /auth/logout:
+    post:
+      summary: Invalidate current token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out
+
+
+  # --------------------------------------------------------
+  # WAREHOUSES
+  # --------------------------------------------------------
+  /warehouses:
+    get:
+      summary: List all warehouses
+      responses:
+        '200':
+          description: Successful
+    post:
+      summary: Create new warehouse (admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Warehouse created
+        '403':
+          description: Forbidden
+
+  /warehouses/{id}:
+    get:
+      summary: Get warehouse by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Found
+        '404':
+          description: Not found
+
+    put:
+      summary: Update warehouse (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Updated
+
+    delete:
+      summary: Delete warehouse (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Deleted
+
+
+  # --------------------------------------------------------
+  # SHIPMENTS
+  # --------------------------------------------------------
+  /shipments:
+    get:
+      summary: List all shipments
+      responses:
+        '200':
+          description: Successful
+    post:
+      summary: Create shipment (operator or admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Shipment created
+
+  /shipments/{id}:
+    get:
+      summary: Get shipment by ID
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Found
+        '404':
+          description: Not found
+
+    put:
+      summary: Update shipment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Updated
+
+    delete:
+      summary: Delete shipment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Deleted
+
+  /shipments/{id}/packages:
+    get:
+      summary: List all packages belonging to a shipment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: List of packages
+        '401':
+          description: Unauthorized (expired token)
+        '404':
+          description: Shipment not found
+
+
+  # --------------------------------------------------------
+  # PACKAGES
+  # --------------------------------------------------------
+  /packages:
+    get:
+      summary: List all packages
+      responses:
+        '200':
+          description: Successful
+
+    post:
+      summary: Create package (admin or operator)
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Package'
+      responses:
+        '201':
+          description: Package created
+
+  /packages/{id}:
+    get:
+      summary: Get package by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Found
+
+    put:
+      summary: Update package
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Updated
+
+    delete:
+      summary: Delete package
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Deleted
+
