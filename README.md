@@ -141,23 +141,20 @@ Wireframe’ams galima panaudoti bet kokį įrankį (draw.io, Figma, ranka ir nu
 
 
 2. **Dashboard**
-   - Viršuje – navigacija (Dashboard, Sandėliai, Siuntos, Paketai).
-   - 3 statistikos kortelės (Sandėliai, Siuntos, Paketai).
-   - Logistikos iliustracinis paveikslėlis.
+<img width="3364" height="2084" alt="image" src="https://github.com/user-attachments/assets/e6091382-03d6-45f8-80bc-2a14e2ef91ea" />
+
 
 3. **Sandėlių langas**
-   - Lentelė su stulpeliais: ID, pavadinimas, adresas, veiksmai.
-   - Mygtukas „Naujas sandėlis“.
-   - Veiksmai: „Siuntos“ (atidaro modalą).
+<img width="3164" height="1804" alt="image" src="https://github.com/user-attachments/assets/8841e871-92af-41f8-8755-f8ce341b741b" />
+
 
 4. **Siuntų langas**
-   - Filtrai viršuje (statusas, kodas).
-   - Lentelė su stulpeliais: ID, kodas, statusas, sandėlis, veiksmai.
-   - Veiksmai: „Detalės“, „Paketai“, „Naujas paketas“.
+<img width="3164" height="1804" alt="image" src="https://github.com/user-attachments/assets/3f6ab76b-452c-4331-a02c-07db758056a6" />
+
 
 5. **Paketų langas**
-   - Lentelė: ID, aprašymas, svoris, išmatavimai, dūžtantis, susijusi siunta.
-   - Mygtukas „Siunta #id“.
+<img width="3164" height="2124" alt="image" src="https://github.com/user-attachments/assets/1b30567e-18d2-44c0-8c1a-90dce0b143c2" />
+
 
 6. **Modaliniai langai**
    - „Siunta #id – paketai“ (lentelė + „Naujas paketas“ forma).
