@@ -128,6 +128,19 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 
 <img width="801" height="559" alt="image" src="https://github.com/user-attachments/assets/d395d979-0c26-44fe-aef3-a86a1d952c19" />
 
+### 2.2. Sistemos diegimas Google Cloud Run aplinkoje
+
+Projektas buvo pilnai įdiegtas į **Google Cloud Run** serverless infrastruktūrą, kuri leidžia paleisti Laravel API kaip konteinerizuotą paslaugą be papildomos serverių priežiūros. 
+
+Front-end (UI) taip pat buvo sukonfigūruotas taip, kad veiktų tiesiogiai su šiuo nuotoliniu API.
+
+- API ir UI pasiekiami internetu:
+  **https://logistics-api-483857827444.europe-west1.run.app/ui/index.html**
+
+- API veikia Docker konteineryje, paleistame Google Cloud Run.
+- Autentifikacija (JWT + Refresh tokens) veikia tiek lokaliai, tiek Cloud aplinkoje.
+
+
 ---
 
 ## 3. Naudotojo sąsajos projektas
