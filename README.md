@@ -134,8 +134,6 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 
 ### 3.1. Wireframe’ai
 
-Wireframe’ams galima panaudoti bet kokį įrankį (draw.io, Figma, ranka ir nuskanuoti). Pasiūlyti langai:
-
 1. **Prisijungimo langas**
 <img width="2484" height="1884" alt="image" src="https://github.com/user-attachments/assets/4ff9ef72-421d-4d59-b280-b50fe808e723" />
 
@@ -157,18 +155,46 @@ Wireframe’ams galima panaudoti bet kokį įrankį (draw.io, Figma, ranka ir nu
 
 
 6. **Modaliniai langai**
-   - „Siunta #id – paketai“ (lentelė + „Naujas paketas“ forma).
-   - „Naujas sandėlis“ forma.
-   - Klaidos / informaciniai pranešimai.
+**Sandėlio kūrimo langas**
+<img width="2284" height="1484" alt="image" src="https://github.com/user-attachments/assets/8d7f2788-6b98-4690-9854-d279f4c66c3a" />
+**Siuntos kūrimo langas**
+<img width="2324" height="1604" alt="image" src="https://github.com/user-attachments/assets/b6c8bc4f-8033-4681-81eb-cbc038ed5712" />
+**Pakuotė kūrimo langas**
+<img width="2404" height="1764" alt="image" src="https://github.com/user-attachments/assets/df59f1b6-7169-4dea-8ec8-d6bada4a200d" />
+
 
 ### 3.2. Realizacijos ekrano iškarpos
 
-Prie wireframe’ų ataskaitoje pridėti atitinkamas:
+1. **Prisijungimo langas**
+<img width="616" height="380" alt="image" src="https://github.com/user-attachments/assets/e60e1c8c-f5e0-4c34-90a4-d9c91586793e" />
 
-- Prijungimo ekrano screenshot.
-- Dashboard screenshot.
-- Sandėlių, Siuntų, Paketų langų screenshot’us.
-- Bent vieno modalo (pvz., „Siunta #1 – paketai“) screenshot.
+
+2. **Dashboard**
+<img width="1129" height="829" alt="image" src="https://github.com/user-attachments/assets/d3afe17d-0e28-41e3-9b4c-0a6ac377db41" />
+
+
+3. **Sandėlių langas**
+<img width="1268" height="450" alt="image" src="https://github.com/user-attachments/assets/3111774b-325f-43a4-973b-eaeab8ec4d89" />
+
+
+4. **Siuntų langas**
+<img width="1170" height="496" alt="image" src="https://github.com/user-attachments/assets/ac2722fe-f8e5-4d1b-9c81-560bf02e49c2" />
+
+
+5. **Pakuočių langas**
+<img width="1225" height="689" alt="image" src="https://github.com/user-attachments/assets/92c1faf9-c588-45da-8710-c9a74a7741b9" />
+
+
+6. **Modaliniai langai**
+**Sandėlio kūrimo langas**
+<img width="484" height="302" alt="image" src="https://github.com/user-attachments/assets/1383ede5-ed60-45b1-bcdc-f776f70d46be" />
+
+**Siuntos kūrimo langas**
+<img width="1096" height="484" alt="image" src="https://github.com/user-attachments/assets/dfcec977-0663-4ed4-8efe-eb83c90f288b" />
+
+**Pakuotė kūrimo langas**
+<img width="475" height="472" alt="image" src="https://github.com/user-attachments/assets/3b4c8895-7ef1-4ed2-9e72-fcf3390dab73" />
+
 
 ---
 
