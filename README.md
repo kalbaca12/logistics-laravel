@@ -12,17 +12,11 @@ Projekto tikslas – sukurti paprastą logistikos valdymo sistemą, leidžianči
 
 Sistema realizuota kaip **REST API (Laravel)** ir **lengvas front-end** (vienas HTML/CSS/JS puslapis), skirtas patogiai išbandyti ir demonstruoti API funkcionalumą.
 
-Tipiniai naudotojai:
+Naudotojai:
 
 - **Administratorius** – prižiūri sandėlių sąrašą, gali kurti / redaguoti / trinti sandėlius, valdyti siuntas ir paketus.
 - **Operatorius** – dirba su siuntomis ir paketais (kuria naujas siuntas, priskiria paketus).
 - **Svečas (guest)** – gali tik peržiūrėti sandėlių, siuntų ir paketų sąrašus per API ir UI, bet negali keisti duomenų.
-
-Sistema orientuota į mokymosi tikslus – parodyti, kaip:
-
-- sukurti REST API su **roles-based** autentifikacija,
-- naudoti **JWT** ir **refresh tokenus**,
-- ant viršaus uždėti paprastą, **responsyvią naudotojo sąsają**.
 
 ---
 
@@ -223,9 +217,7 @@ Front-end (UI) taip pat buvo sukonfigūruotas taip, kad veiktų tiesiogiai su š
 
 ## 4. API specifikacija (OpenAPI)
 
-Pilna API specifikacija aprašoma atskirame faile:
-
-- **api-spec.yaml** (OpenAPI 3.0)
+Pilna API specifikacija aprašoma atskirame faile: **api-spec.yaml** (OpenAPI 3.0)
 
 ### 4.1. Pagrindiniai endpoint’ai
 
@@ -439,22 +431,12 @@ Pilna API specifikacija aprašoma atskirame faile:
 
 Sukurtas logistikos valdymo sprendimas įgyvendina visus laboratorinio darbo reikalavimus – nuo REST API struktūros iki modernios naudotojo sąsajos. Projekto įgyvendinimo metu pasiekti šie rezultatai:
 
-1. Sukurtas pilnas REST API su Laravel:
-   - Sandėlių, siuntų ir paketų CRUD veikimas.
-   - Rolėmis grįsta prieiga (admin, operator).
-   - JWT autentifikacija su refresh token sistema.
+1. Sukurtas pilnas REST API su Laravel. Sandėlių, siuntų ir paketų CRUD veikimas. Rolėmis grįsta prieiga (admin, operator). JWT autentifikacija su refresh token sistema.
 
-2. Sukurtas pilnai funkcinis Front-End:
-   - Vienas puslapis (SPA tipo struktūra).
-   - Modalai, animacijos, ikonų sistema, responsive dizainas.
-   - Patogios formos, validacija ir dinaminiai duomenys.
+2. Sukurtas pilnai funkcinis Front-End. Vienas puslapis (SPA tipo struktūra). Modalai, animacijos, ikonų sistema, responsive dizainas. Patogios formos, validacija ir dinaminiai duomenys.
 
-3. Sistema patalpinta į Google Cloud Run:
-   - API veikia serverless aplinkoje.
-   - UI pritaikytas darbui su nuotoliniu API.
+3. Sistema patalpinta į Google Cloud Run. API veikia serverless aplinkoje. UI pritaikytas darbui su nuotoliniu API.
 
-4. Parengta išsami OpenAPI specifikacija:
-   - Visi endpoint’ai aprašyti faile api-spec.yaml.
-   - Dokumentacija tinkama integracijoms ir automatinėms testavimo priemonėms.
+4. Parengta išsami OpenAPI specifikacija. Visi endpoint’ai aprašyti faile api-spec.yaml. Dokumentacija tinkama integracijoms ir automatinėms testavimo priemonėms.
 
 
