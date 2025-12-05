@@ -159,7 +159,7 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 <img width="2284" height="1484" alt="image" src="https://github.com/user-attachments/assets/8d7f2788-6b98-4690-9854-d279f4c66c3a" />
 **Siuntos kūrimo langas**
 <img width="2324" height="1604" alt="image" src="https://github.com/user-attachments/assets/b6c8bc4f-8033-4681-81eb-cbc038ed5712" />
-**Pakuotė kūrimo langas**
+**Pakuotės kūrimo langas**
 <img width="2404" height="1764" alt="image" src="https://github.com/user-attachments/assets/df59f1b6-7169-4dea-8ec8-d6bada4a200d" />
 
 
@@ -192,7 +192,7 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 **Siuntos kūrimo langas**
 <img width="1096" height="484" alt="image" src="https://github.com/user-attachments/assets/dfcec977-0663-4ed4-8efe-eb83c90f288b" />
 
-**Pakuotė kūrimo langas**
+**Pakuotės kūrimo langas**
 <img width="475" height="472" alt="image" src="https://github.com/user-attachments/assets/3b4c8895-7ef1-4ed2-9e72-fcf3390dab73" />
 
 
