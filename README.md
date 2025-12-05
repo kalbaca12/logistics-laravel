@@ -186,13 +186,17 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 
 
 6. **Modaliniai langai**
+   
 **Sandėlio kūrimo langas**
+
 <img width="484" height="302" alt="image" src="https://github.com/user-attachments/assets/1383ede5-ed60-45b1-bcdc-f776f70d46be" />
 
 **Siuntos kūrimo langas**
+
 <img width="1096" height="484" alt="image" src="https://github.com/user-attachments/assets/dfcec977-0663-4ed4-8efe-eb83c90f288b" />
 
 **Pakuotės kūrimo langas**
+
 <img width="475" height="472" alt="image" src="https://github.com/user-attachments/assets/3b4c8895-7ef1-4ed2-9e72-fcf3390dab73" />
 
 
