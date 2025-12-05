@@ -212,39 +212,238 @@ Sistema sudaryta iš trijų pagrindinių komponentų:
 
 Pilna API specifikacija aprašoma atskirame faile:
 
-- `api-spec.yaml` (OpenAPI 3.0 formatas).
+- **api-spec.yaml** (OpenAPI 3.0)
 
-README / ataskaitoje galima palikti nuorodą:
+### 4.1. Pagrindiniai endpoint’ai
 
-> Išsami API specifikacija pateikta faile **`api-spec.yaml`**, kuriame aprašyti visi maršrutai, modeliai ir pavyzdiniai atsakymai.
+| Metodas | Kelias                               | Aprašymas                                | Autentifikacija / Rolė            |
+|--------|-----------------------------------------|-------------------------------------------|-----------------------------------|
+| POST   | /api/v1/auth/register                   | Registracija                              | vieša                             |
+| POST   | /api/v1/auth/login                      | Prisijungimas                             | vieša                             |
+| POST   | /api/v1/auth/refresh                    | Access token atnaujinimas                 | su refresh token                  |
+| GET    | /api/v1/auth/me                         | Vartotojo informacija                     | auth:api                          |
+| POST   | /api/v1/auth/logout                     | Atsijungimas                              | auth:api                          |
+| GET    | /api/v1/warehouses                      | Sandėlių sąrašas                          | vieša                             |
+| POST   | /api/v1/warehouses                      | Naujo sandėlio kūrimas                    | auth:api, role:admin              |
+| GET    | /api/v1/shipments                       | Siuntų sąrašas                            | vieša                             |
+| POST   | /api/v1/shipments                       | Nauja siunta                              | auth:api, role:operator,admin     |
+| GET    | /api/v1/shipments/{id}                  | Konkretus siuntos įrašas                  | vieša                             |
+| GET    | /api/v1/shipments/{id}/packages         | Siuntos paketai                           | auth:api                          |
+| GET    | /api/v1/packages                        | Paketų sąrašas                            | vieša                             |
+| POST   | /api/v1/packages                        | Naujo paketo sukūrimas                    | auth:api, role:operator,admin     |
 
-### 4.1. Pagrindiniai endpoint’ai (santrauka)
+---
 
-| Metodas | Kelias                          | Aprašymas                            | Autentifikacija / rolė          |
-|--------|----------------------------------|--------------------------------------|---------------------------------|
-| POST   | `/api/v1/auth/register`         | Registracija                         | vieša                           |
-| POST   | `/api/v1/auth/login`            | Prisijungimas                        | vieša                           |
-| POST   | `/api/v1/auth/refresh`          | Access token atnaujinimas            | vieša (su validžiu refresh)     |
-| GET    | `/api/v1/auth/me`               | Prisijungusio vartotojo info         | `auth:api`                      |
-| POST   | `/api/v1/auth/logout`           | Atsijungimas                         | `auth:api`                      |
-| GET    | `/api/v1/warehouses`            | Sandėlių sąrašas                     | vieša                           |
-| POST   | `/api/v1/warehouses`            | Naujas sandėlis                      | `auth:api`, `role:admin`        |
-| GET    | `/api/v1/shipments`             | Siuntų sąrašas                       | vieša                           |
-| POST   | `/api/v1/shipments`             | Nauja siunta                         | `auth:api`, `role:operator,admin` |
-| GET    | `/api/v1/shipments/{id}`        | Konkreti siunta                      | vieša                           |
-| GET    | `/api/v1/shipments/{id}/packages` | Konkrečios siuntos paketai         | `auth:api` (su JWT/refresh)     |
-| POST   | `/api/v1/packages`              | Naujas paketas siuntai               | `auth:api`, `role:operator,admin` |
-| GET    | `/api/v1/packages`              | Paketų sąrašas                       | vieša                           |
+### 4.2. Prisijungimas (POST /api/v1/auth/login)
 
-### 4.2. Pavyzdys: prisijungimas
+**Atsako kodai**
+
+| Kodas | Aprašymas                |
+|-------|---------------------------|
+| 200   | Prisijungimas sėkmingas   |
+| 401   | Blogi prisijungimo duomenys |
+| 422   | Netinkama užklausa       |
 
 **Užklausa**
 
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
-
+```json
 {
   "email": "admin@example.com",
   "password": "password"
 }
+```
+
+**Atsakymas (200)**
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1...",
+  "refresh_token": "e31d019a-d12e-4b7e-9...",
+  "token_type": "bearer",
+  "expires_in": 3600
+}
+```
+
+**Atsakymas (401)**
+
+```json
+{
+  "message": "Invalid credentials"
+}
+```
+
+---
+
+### 4.3. Registracija (POST /api/v1/auth/register)
+
+**Atsako kodai**
+
+| Kodas | Aprašymas           |
+|-------|----------------------|
+| 201   | Vartotojas sukurtas  |
+| 422   | Validacijos klaida   |
+
+**Užklausa**
+
+```json
+{
+  "name": "Admin",
+  "email": "admin@example.com",
+  "password": "password",
+  "password_confirmation": "password",
+  "role": "admin"
+}
+```
+
+**Atsakymas (201)**
+
+```json
+{
+  "id": 1,
+  "name": "Admin",
+  "email": "admin@example.com",
+  "role": "admin"
+}
+```
+
+---
+
+### 4.4. Sandėlių sąrašas (GET /api/v1/warehouses)
+
+**Atsakymas (200)**
+
+```json
+[
+  { "id": 1, "name": "Kaunas DC", "address": "Kaunas" },
+  { "id": 2, "name": "Vilnius HUB", "address": "Vilnius" }
+]
+```
+
+---
+
+### 4.5. Naujo sandėlio kūrimas (POST /api/v1/warehouses)
+
+**Atsako kodai**
+
+| Kodas | Aprašymas           |
+|-------|----------------------|
+| 201   | Sandėlis sukurtas    |
+| 403   | Rolė neleidžia       |
+| 422   | Netinkami duomenys   |
+
+**Užklausa**
+
+```json
+{
+  "name": "Klaipėda Port",
+  "address": "Klaipėda"
+}
+```
+
+**Atsakymas (201)**
+
+```json
+{
+  "id": 3,
+  "name": "Klaipėda Port",
+  "address": "Klaipėda"
+}
+```
+
+---
+
+### 4.6. Siuntos paketai (GET /api/v1/shipments/{id}/packages)
+
+**Atsako kodai**
+
+| Kodas | Aprašymas              |
+|-------|-------------------------|
+| 200   | Paketai gauti           |
+| 401   | Token pasibaigęs        |
+| 404   | Siunta nerasta          |
+
+**Atsakymas (200)**
+
+```json
+[
+  {
+    "id": 1,
+    "shipment_id": 1,
+    "description": "Books",
+    "weight": 12.4,
+    "length": 40,
+    "width": 30,
+    "height": 25,
+    "fragile": false
+  }
+]
+```
+
+---
+
+### 4.7. Naujo paketo kūrimas (POST /api/v1/packages)
+
+**Atsako kodai**
+
+| Kodas | Aprašymas            |
+|-------|-----------------------|
+| 201   | Paketas sukurtas      |
+| 403   | Rolė neleidžia        |
+| 422   | Blogi duomenys        |
+
+**Užklausa**
+
+```json
+{
+  "shipment_id": 1,
+  "description": "Monitors",
+  "weight": 25.5,
+  "length": 60,
+  "width": 40,
+  "height": 30,
+  "fragile": true
+}
+```
+
+**Atsakymas (201)**
+
+```json
+{
+  "id": 9,
+  "shipment_id": 1,
+  "description": "Monitors",
+  "weight": 25.5,
+  "length": 60,
+  "width": 40,
+  "height": 30,
+  "fragile": true
+}
+```
+
+---
+
+## 5. Projekto išvados
+
+Sukurtas logistikos valdymo sprendimas įgyvendina visus laboratorinio darbo reikalavimus – nuo REST API struktūros iki modernios naudotojo sąsajos. Projekto įgyvendinimo metu pasiekti šie rezultatai:
+
+1. Sukurtas pilnas REST API su Laravel:
+   - Sandėlių, siuntų ir paketų CRUD veikimas.
+   - Rolėmis grįsta prieiga (admin, operator).
+   - JWT autentifikacija su refresh token sistema.
+
+2. Sukurtas pilnai funkcinis Front-End:
+   - Vienas puslapis (SPA tipo struktūra).
+   - Modalai, animacijos, ikonų sistema, responsive dizainas.
+   - Patogios formos, validacija ir dinaminiai duomenys.
+
+3. Sistema patalpinta į Google Cloud Run:
+   - API veikia serverless aplinkoje.
+   - UI pritaikytas darbui su nuotoliniu API.
+
+4. Parengta išsami OpenAPI specifikacija:
+   - Visi endpoint’ai aprašyti faile api-spec.yaml.
+   - Dokumentacija tinkama integracijoms ir automatinėms testavimo priemonėms.
+
+5. Sistema yra aiški, išplečiama ir tinkama realaus pasaulio logistikos scenarijams.
+
+
