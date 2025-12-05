@@ -444,6 +444,4 @@ Sukurtas logistikos valdymo sprendimas įgyvendina visus laboratorinio darbo rei
    - Visi endpoint’ai aprašyti faile api-spec.yaml.
    - Dokumentacija tinkama integracijoms ir automatinėms testavimo priemonėms.
 
-5. Sistema yra aiški, išplečiama ir tinkama realaus pasaulio logistikos scenarijams.
-
 
